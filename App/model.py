@@ -59,7 +59,9 @@ def newCatalog():
                'authors': None,
                'tags': None,
                'tagIds': None,
-               'years': None}
+               'years': None,
+               'titles':None
+               }
 
     """
     Esta lista contiene todo los libros encontrados
@@ -120,7 +122,11 @@ def newCatalog():
     La columna 'titles' del archivo books.csv
     """
     # TODO lab 6, agregar el ADT map con newMap()
-    catalog['titles'] = None
+    catalog['titles'] = mp.newMap(20000,
+                                 maptype='PROBING',
+                                 loadfactor=0.5,
+                                 cmpfunction=compareTitles)
+
 
     return catalog
 
@@ -265,13 +271,24 @@ def addBookTag(catalog, tag):
             lt.addLast(tagbook['value']['books'], book['value'])
 
 
-def addBookTitle(catalog, title):
+def addBookTitle(catalog, title, book):
     # TODO lab 6, agregar el libro al map de titulos
     """
     Completar la descripcion de addBookTitle
     """
-    pass
-
+    """
+    Agrega un libro al mapa de títulos en el catálogo.
+    """
+    books = catalog['books']
+    existtitle = mp.contains(books, title)
+    if existtitle:
+        entry = mp.get(books, title)
+        booklist = me.getValue(entry)
+        lt.addLast(booklist, book)
+    else:
+        booklist = lt.newList()
+        lt.addLast(booklist, book)
+        mp.put(books, title, booklist)
 
 # ==============================
 # Funciones de consulta
@@ -314,7 +331,13 @@ def getBookByTitle(catalog, title):
     """
     Completar la descripcion de getBookByTitle
     """
-    pass
+    books = catalog['books']
+    if mp.contains(books, title):
+        entry = mp.get(books, title)
+        booklist = me.getValue(entry)
+        if lt.size(booklist) > 0:
+            return lt.first(booklist)
+    return None
 
 
 def booksSize(catalog):
@@ -343,7 +366,7 @@ def titlesSize(catalog):
     """
     Completar la descripcion de titlesSize
     """
-    pass
+    return mp.size(catalog['books'])
 
 
 # ==============================
@@ -442,4 +465,10 @@ def compareTitles(title, book):
         int: retrona 0 si son iguales, 1 si el primero es mayor
         y -1 si el primero es menor
     """
-    pass
+    booktitle = me.getValue(book)
+    if (title == booktitle):
+        return 0
+    elif (title > booktitle):
+        return 1
+    else:
+        return -1
